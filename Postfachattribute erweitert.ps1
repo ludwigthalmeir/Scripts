@@ -1,62 +1,64 @@
-# =========================
-# AUTO MODULE CHECK + INSTALL
-# =========================
-function Ensure-Module($name) {
-
-    if (-not (Get-Module -ListAvailable -Name $name)) {
-        Write-Host "Modul fehlt -> installiere: $name" -ForegroundColor Yellow
-        Install-Module $name -Scope CurrentUser -Force -AllowClobber
-    }
-
-    Import-Module $name -ErrorAction Stop
-}
 
 # =========================
-# EXO VERBINDUNG SICHERN
+# MODULE CHECK + INSTALL
 # =========================
-function Ensure-EXOConnection {
+$module = "ExchangeOnlineManagement"
+
+Write-Host "Prüfe Modul: $module" -ForegroundColor Yellow
+
+if (-not (Get-Module -ListAvailable -Name $module)) {
+    Write-Host "Installiere $module ..." -ForegroundColor DarkYellow
 
     try {
-        Get-ConnectionInformation -ErrorAction Stop | Out-Null
-        Write-Host "EXO bereits verbunden" -ForegroundColor Green
+        Install-Module $module -Scope CurrentUser -Force -ErrorAction Stop
+        Write-Host "Installiert ✔" -ForegroundColor Green
     }
     catch {
-        Write-Host "Keine EXO Verbindung -> verbinde..." -ForegroundColor Yellow
-        Connect-ExchangeOnline -ShowBanner:$false
+        Write-Host "FEHLER bei Installation: $module" -ForegroundColor Red
+        return
     }
 }
 
 # =========================
-# MODULE SETUP
+# IMPORT MODULE
 # =========================
-Ensure-Module ExchangeOnlineManagement
-Ensure-EXOConnection
+try {
+    Import-Module $module -ErrorAction Stop
+    Write-Host "Modul geladen ✔" -ForegroundColor Green
+}
+catch {
+    Write-Host "FEHLER beim Import: $module" -ForegroundColor Red
+    return
+}
 
 # =========================
-# INPUT
+# EXCHANGE CONNECT CHECK
+# =========================
+Write-Host "Prüfe Exchange Online Verbindung..." -ForegroundColor Yellow
+
+try {
+    Get-EXOMailbox -ResultSize 1 -ErrorAction Stop | Out-Null
+    Write-Host "Bereits verbunden ✔" -ForegroundColor Green
+}
+catch {
+    Write-Host "Keine aktive Session -> verbinde..." -ForegroundColor Yellow
+    Connect-ExchangeOnline
+}
+
+# =========================
+# USER INPUT
 # =========================
 $user = Read-Host "User eingeben"
 
-Write-Host "`n===== MAILBOX INFO =====`n" -ForegroundColor Cyan
-
 Get-EXOMailbox -Identity $user |
-    Select-Object DisplayName, PrimarySmtpAddress, RecipientTypeDetails, ForwardingSmtpAddress, DeliverToMailboxAndForward
-
-Write-Host "`n===== STATISTICS =====`n" -ForegroundColor Cyan
+    Select DisplayName, PrimarySmtpAddress, RecipientTypeDetails, ForwardingSmtpAddress, DeliverToMailboxAndForward
 
 Get-EXOMailboxStatistics -Identity $user |
-    Select-Object TotalItemSize, ItemCount, LastLogonTime, StorageLimitStatus
-
-Write-Host "`n===== INBOX RULES =====`n" -ForegroundColor Cyan
+    Select TotalItemSize, ItemCount, LastLogonTime, StorageLimitStatus
 
 Get-InboxRule -Mailbox $user
-
-Write-Host "`n===== PERMISSIONS =====`n" -ForegroundColor Cyan
 
 Get-MailboxPermission -Identity $user |
     Where-Object { $_.IsInherited -eq $false }
 
-# =========================
-# PAUSE
-# =========================
-Read-Host "`nFertig - Enter zum Beenden"
+Pause
