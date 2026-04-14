@@ -1,0 +1,10 @@
+[
+    {
+        "name": "Postfach Attribute",
+        "file": "Postfachattribute.ps1"
+    },
+    {
+        "name": "Repo Update",
+        "file": "RepoUpdate.ps1"
+    }
+]
