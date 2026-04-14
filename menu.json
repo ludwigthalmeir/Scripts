@@ -1,10 +1,12 @@
 [
     {
         "name": "Postfach Attribute",
-        "file": "Postfachattribute.ps1"
+        "file": "Postfachattribute.ps1",
+        "index": 0
     },
     {
         "name": "Repo Update",
-        "file": "RepoUpdate.ps1"
+        "file": "RepoUpdate.ps1",
+        "index": 1
     }
 ]
