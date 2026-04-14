@@ -2,90 +2,81 @@
 
 $scriptPath = "/home/ludwig/Dokumente/Scripts"
 
-function Get-ScriptList {
-    Get-ChildItem -Path $scriptPath -Filter "*.ps1" |
-    Where-Object { $_.Name -ne "Main.ps1" -and $_.Name -ne "sync-repo.ps1" }
+# =========================
+# MENU (EINFACH ERWEITERBAR)
+# =========================
+$menu = @(
+    @{ Index = 1; Name = "Repo Update";        File = "RepoUpdate.ps1" }
+    @{ Index = 3; Name = "Postfach Attribute"; File = "Postfachattribute.ps1" }
+)
+
+# =========================
+# LOOKUP MAP (EXTREM STABIL)
+# =========================
+$map = @{}
+foreach ($item in $menu) {
+    $map[[int]$item.Index] = $item
 }
 
-function Run-Script($file) {
-    Write-Host "`nStarte: $($file.Name)`n" -ForegroundColor Green
-    pwsh -File $file.FullName
-    Write-Host "`nFertig. Enter drücken..." -ForegroundColor DarkGray
+# =========================
+# SCRIPT AUSFÜHREN
+# =========================
+function Run-Script($item) {
+
+    $fullPath = Join-Path $scriptPath $item.File
+
+    if (-not (Test-Path $fullPath)) {
+        Write-Host "❌ Script nicht gefunden: $($item.File)" -ForegroundColor Red
+        return
+    }
+
+    Write-Host "`n▶ Starte: $($item.Name)`n" -ForegroundColor Green
+
+    & pwsh -NoProfile -ExecutionPolicy Bypass -File $fullPath
+
+    Write-Host "`n✔ Fertig. Enter..."
     Read-Host
 }
 
+# =========================
+# MAIN LOOP
+# =========================
 while ($true) {
 
     Clear-Host
+
     Write-Host "==========================" -ForegroundColor Cyan
     Write-Host "       ADMIN MAIN         " -ForegroundColor Cyan
     Write-Host "==========================" -ForegroundColor Cyan
     Write-Host ""
 
-    $scripts = Get-ScriptList
-
-    if ($scripts.Count -eq 0) {
-        Write-Host "Keine Skripte gefunden." -ForegroundColor Red
-        exit
-    }
-
-    # =========================
-    # Anzeige Menü (Nummer)
-    # =========================
-    for ($i = 0; $i -lt $scripts.Count; $i++) {
-        Write-Host "[$i] $($scripts[$i].Name)"
+    foreach ($item in $menu) {
+        Write-Host ("[{0}] {1}" -f $item.Index, $item.Name)
     }
 
     Write-Host ""
-    Write-Host "[G] Grafische Auswahl"
     Write-Host "[Q] Beenden"
     Write-Host ""
 
-    $input = Read-Host "Auswahl"
+    $input = (Read-Host "Auswahl").Trim()
 
-    # =========================
-    # Beenden
-    # =========================
     if ($input -eq "Q") {
         break
     }
 
     # =========================
-    # GUI Auswahl (wenn verfügbar)
-    # =========================
-    if ($input -eq "G") {
-
-        if (Get-Command Out-GridView -ErrorAction SilentlyContinue) {
-
-            $selected = $scripts | Out-GridView -Title "Script auswählen" -PassThru
-
-            if ($selected) {
-                Run-Script $selected
-            }
-
-        } else {
-            Write-Host "Out-GridView nicht verfügbar (kein GUI Support)." -ForegroundColor Yellow
-            Start-Sleep -Seconds 2
-        }
-
-        continue
-    }
-
-    # =========================
-    # Nummerische Auswahl
+    # NUMERISCHE AUSWAHL (100% STABIL)
     # =========================
     if ($input -match "^\d+$") {
 
-        $index = [int]$input
+        $key = [int]$input
 
-        if ($index -ge 0 -and $index -lt $scripts.Count) {
-            Run-Script $scripts[$index]
-        } else {
-            Write-Host "Ungültige Auswahl." -ForegroundColor Red
-            Start-Sleep -Seconds 1
+        if ($map.ContainsKey($key)) {
+            Run-Script $map[$key]
         }
-
-        continue
+        else {
+            Write-Host "❌ Keine Aktion für $key" -ForegroundColor Red
+            Start-Sleep 1
+        }
     }
-
 }
