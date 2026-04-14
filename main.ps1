@@ -6,10 +6,11 @@ $scriptPath = "/home/ludwig/Dokumente/Scripts"
 # MENU (EINFACH ERWEITERBAR)
 # =========================
 $menu = @(
-    @{ Index = 1; Name = "Repo Update";        File = "RepoUpdate.ps1" }
-    @{ Index = 2; Name = "Postfach Attribute"; File = "Postfachattribute.ps1" }
-    @{ Index = 3; Name = "Postfach Attribute erweitert"; File = "Postfachattribute erweitert.ps1" }
-    @{ Index = 4; Name = "Alle Postfächer Größe"; File = "Alle Postfächer Größe.ps1" }
+    @{ Index = 1; Name = "Repo Update                                   |";        File = "RepoUpdate.ps1" }
+    @{ Index = 2; Name = "Postfach Attribute                            |"; File = "Postfachattribute.ps1" }
+    @{ Index = 3; Name = "Postfach Attribute erweitert                  |"; File = "Postfachattribute erweitert.ps1" }
+    @{ Index = 4; Name = "Alle Postfächer Größe                         |"; File = "Alle Postfächer Größe.ps1" }
+    @{ Index = 4; Name = ""                                             |""; File = "Alle Postfächer Größe.ps1" }
 )
 
 # =========================
@@ -50,7 +51,7 @@ while ($true) {
     Write-Host "==============================================" -ForegroundColor Cyan
     Write-Host "                 ADMIN MAIN                   " -ForegroundColor Cyan
     Write-Host "==============================================" -ForegroundColor Cyan
-    Write-Host ""
+    Write-Host "                                             |"
 
     foreach ($item in $menu) {
         Write-Host ("[{0}] {1}" -f $item.Index, $item.Name)
