@@ -60,6 +60,3 @@
                     RecipientTypeDetails,
                     ProhibitSendQuota,
                     ProhibitSendReceiveQuota
-
-    Read-Host "Enter zum Fortfahren"
-}
