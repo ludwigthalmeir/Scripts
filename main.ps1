@@ -9,6 +9,7 @@ $menu = @(
     @{ Index = 1; Name = "Repo Update";        File = "RepoUpdate.ps1" }
     @{ Index = 2; Name = "Postfach Attribute"; File = "Postfachattribute.ps1" }
     @{ Index = 3; Name = "Postfach Attribute erweitert"; File = "Postfachattribute erweitert.ps1" }
+    @{ Index = 4; Name = "Alle Postfächer Größe"; File = "Alle Postfächer Größe.ps1" }
 )
 
 # =========================
