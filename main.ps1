@@ -47,9 +47,9 @@ while ($true) {
 
     Clear-Host
 
-    Write-Host "==========================" -ForegroundColor Cyan
-    Write-Host "       ADMIN MAIN         " -ForegroundColor Cyan
-    Write-Host "==========================" -ForegroundColor Cyan
+    Write-Host "==============================================" -ForegroundColor Cyan
+    Write-Host "                 ADMIN MAIN                   " -ForegroundColor Cyan
+    Write-Host "==============================================" -ForegroundColor Cyan
     Write-Host ""
 
     foreach ($item in $menu) {
