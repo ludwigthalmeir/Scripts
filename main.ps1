@@ -17,6 +17,7 @@ $menu = @(
     @{ Index = 9; Name = "Gruppen Mitglieder hinzufügen"; File = "Gruppen Mitglieder hinzufügen.ps1" }
     @{ Index = 10; Name = "Gruppen und Mitglieder anzeigen"; File = "Gruppen und Mitglieder anzeigen.ps1" }
     @{ Index = 11; Name = "Message Trace User"; File = "Message Trace User.ps1" }
+    @{ Index = 12; Name = "Convert User zu Shared Mailbox"; File = "Convert User zu Shared Mailbox.ps1" }
 
 )
 
