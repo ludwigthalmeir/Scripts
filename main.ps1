@@ -13,6 +13,7 @@ $menu = @(
     @{ Index = 5; Name = "Postfachberechtigungen einzelner User"; File = "Postfachberechtigungen einzelner User.ps1" }
     @{ Index = 6; Name = "Alle Postfächer Berechtigungen"; File = "Alle Postfächer Berechtigungen.ps1" }
     @{ Index = 7; Name = "Message Trace"; File = "Message Trace.ps1" }
+    @{ Index = 8; Name = "Befristeter Zugriffspass; File = "Befristeter Zugriffspass.ps1" }
 
 )
 
