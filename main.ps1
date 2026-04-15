@@ -15,6 +15,7 @@ $menu = @(
     @{ Index = 7; Name = "Message Trace"; File = "Message Trace.ps1" }
     @{ Index = 8; Name = "Befristeter Zugriffspass"; File = "Befristeter Zugriffspass.ps1" }
     @{ Index = 9; Name = "Gruppen Mitglieder hinzufügen"; File = "Gruppen Mitglieder hinzufügen.ps1" }
+    @{ Index = 10; Name = "Gruppen und Mitglieder anzeigen"; File = "Gruppen und Mitglieder anzeigen.ps1" }
 
 )
 
