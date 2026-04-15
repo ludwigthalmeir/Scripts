@@ -41,7 +41,7 @@ try {
 }
 catch {
     Write-Host "Keine aktive Session -> verbinde..." -ForegroundColor Yellow
-    Connect-ExchangeOnline
+    Connect-ExchangeOnline -UseRPSSession
 }
 
 $results = @()
