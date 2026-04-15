@@ -10,6 +10,7 @@ $menu = @(
     @{ Index = 2; Name = "Postfach Attribute"; File = "Postfachattribute.ps1" }
     @{ Index = 3; Name = "Postfach Attribute erweitert"; File = "Postfachattribute erweitert.ps1" }
     @{ Index = 4; Name = "Alle Postfächer Größe"; File = "Alle Postfächer Größe.ps1" }
+    @{ Index = 5; Name = "Postfachberechtigungen einzelner User"; File = "Postfachberechtigungen einzelner User.ps1" }
 )
 
 # =========================
