@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 
 # =========================
 # MODULE CHECK + INSTALL
@@ -15,7 +16,7 @@ if (-not (Get-Module -ListAvailable -Name $module)) {
     }
     catch {
         Write-Host "FEHLER bei Installation: $module" -ForegroundColor Red
-        return
+        exit
     }
 }
 
@@ -28,7 +29,7 @@ try {
 }
 catch {
     Write-Host "FEHLER beim Import: $module" -ForegroundColor Red
-    return
+    exit
 }
 
 # =========================
@@ -46,10 +47,15 @@ catch {
 }
 
 # =========================
-# DEIN ORIGINAL CODE (UNVERÄNDERT)
+# MAIN QUERY
 # =========================
+Write-Host "`nLade Mailbox Daten..." -ForegroundColor Cyan
+
 Get-EXOMailbox -ResultSize Unlimited |
-    Get-EXOMailboxStatistics |
-    Select DisplayName, TotalItemSize, ItemCount, StorageLimitStatus |
+    ForEach-Object {
+
+        Get-EXOMailboxStatistics -Identity $_.Identity
+    } |
+    Select-Object DisplayName, TotalItemSize, ItemCount, StorageLimitStatus |
     Sort-Object TotalItemSize |
     Format-Table -AutoSize
