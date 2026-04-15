@@ -57,7 +57,7 @@ while ($true) {
     Clear-Host
 
     Write-Host "==============================================" -ForegroundColor Cyan
-    Write-Host "                 ADMIN MAIN                   " -ForegroundColor Cyan
+    Write-Host "           MICROSOFT 365 ADMIN MENU           " -ForegroundColor Cyan
     Write-Host "==============================================" -ForegroundColor Cyan
     Write-Host ""
 
