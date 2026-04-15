@@ -1,4 +1,27 @@
+# =========================
+# MODULE CHECK + EXO LOGIN
+# =========================
+function Ensure-ExchangeOnline {
+    
+    # Prüfen ob Modul vorhanden
+    if (-not (Get-Module -ListAvailable -Name ExchangeOnlineManagement)) {
+        Write-Host "📦 ExchangeOnlineManagement wird installiert..." -ForegroundColor Yellow
+        Install-Module ExchangeOnlineManagement -Scope CurrentUser -Force -AllowClobber
+    }
 
+    # Modul laden
+    Import-Module ExchangeOnlineManagement -ErrorAction SilentlyContinue
+
+    # Prüfen ob bereits verbunden
+    try {
+        Get-ConnectionInformation | Out-Null
+        Write-Host "✔ Exchange Online bereits verbunden" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "🔐 Verbinde mit Exchange Online..." -ForegroundColor Yellow
+        Connect-ExchangeOnline -ShowBanner:$false
+    }
+}
     Clear-Host
 
     Write-Host @"
