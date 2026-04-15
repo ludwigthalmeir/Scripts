@@ -11,7 +11,8 @@ $menu = @(
     @{ Index = 3; Name = "Postfach Attribute erweitert"; File = "Postfachattribute erweitert.ps1" }
     @{ Index = 4; Name = "Alle Postfächer Größe"; File = "Alle Postfächer Größe.ps1" }
     @{ Index = 5; Name = "Postfachberechtigungen einzelner User"; File = "Postfachberechtigungen einzelner User.ps1" }
-    @{ Index = 6; Name = "Message Trace"; File = "Message Trace.ps1" }
+    @{ Index = 6; Name = " Alle Postfächer Berechtigungen"; File = " Alle Postfächer Berechtigungen.ps1" }
+    @{ Index = 7; Name = "Message Trace"; File = "Message Trace.ps1" }
 
 )
 
