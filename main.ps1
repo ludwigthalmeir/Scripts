@@ -19,6 +19,10 @@ $menu = @(
     @{ Index = 11; Name = "Message Trace User"; File = "Message Trace User.ps1" }
     @{ Index = 12; Name = "Convert User zu Shared Mailbox"; File = "Convert User zu Shared Mailbox.ps1" }
     @{ Index = 13; Name = "Lizenzen zuweisen"; File = "Lizenzen zuweisen.ps1" }
+    @{ Index = 14; Name = "MFA Check"; File = "MFA Check.ps1" }
+
+
+    MFA Check.ps1
 )
 
 # =========================
