@@ -7,7 +7,7 @@ param (
 Write-Host "▶ Restore Public Folder gestartet..." -ForegroundColor Cyan
 
 # --------------------------------------------------
-# 1. Exchange Verbindung sicherstellen
+# 1. Exchange Verbindung
 # --------------------------------------------------
 if (-not (Get-Command Get-PublicFolder -ErrorAction SilentlyContinue)) {
 
@@ -27,7 +27,7 @@ if (-not (Get-Command Get-PublicFolder -ErrorAction SilentlyContinue)) {
 }
 
 # --------------------------------------------------
-# 2. Dumpster laden (IMMER komplett!)
+# 2. Dumpster laden
 # --------------------------------------------------
 $dumpsterRoot = "\NON_IPM_SUBTREE\DUMPSTER_ROOT"
 
@@ -35,62 +35,106 @@ Write-Host "▶ Lese kompletten Dumpster..." -ForegroundColor Cyan
 
 $results = Get-PublicFolder -Identity $dumpsterRoot -Recurse -ResultSize Unlimited
 
-# --------------------------------------------------
-# 3. Optionaler Filter (nur wenn gesetzt!)
-# --------------------------------------------------
-if ($SearchPattern -and $SearchPattern.Trim() -ne "") {
-
-    Write-Host "▶ Filter aktiv: $SearchPattern" -ForegroundColor Yellow
-
-    $results = $results | Where-Object {
-        $_.Name -like "*$SearchPattern*"
-    }
-}
-else {
-    Write-Host "▶ Kein Filter aktiv – zeige ALLE Elemente" -ForegroundColor Green
+# Optionaler Filter
+if ($SearchPattern) {
+    $results = $results | Where-Object { $_.Name -like "*$SearchPattern*" }
 }
 
-# --------------------------------------------------
-# 4. Prüfen ob Ergebnisse vorhanden
-# --------------------------------------------------
 if (-not $results) {
     Write-Host "❌ Keine Elemente gefunden" -ForegroundColor Red
     return
 }
 
+# --------------------------------------------------
+# 3. Auswahl anzeigen
+# --------------------------------------------------
+Write-Host ""
 Write-Host "✅ Gefundene Elemente:" $results.Count -ForegroundColor Green
+Write-Host ""
 
-# --------------------------------------------------
-# 5. Ausgabe
-# --------------------------------------------------
+$index = 1
+$selectionTable = @()
+
 foreach ($folder in $results) {
 
-    Write-Host ""
-    Write-Host "📁 Name:     $($folder.Name)"
-    Write-Host "📂 Pfad:     $($folder.ParentPath)"
-    Write-Host "🔎 Identity: $($folder.Identity)"
+    $obj = [PSCustomObject]@{
+        Nr       = $index
+        Name     = $folder.Name
+        Pfad     = $folder.ParentPath
+        Identity = $folder.Identity
+    }
 
-    # Optional verschieben
-    if ($TargetPath -and $TargetPath.Trim() -ne "") {
-        try {
-            Write-Host "➡ Verschiebe nach: $TargetPath" -ForegroundColor Yellow
-            Set-PublicFolder -Identity $folder.Identity -Path $TargetPath
-            Write-Host "✔ Erfolgreich verschoben" -ForegroundColor Green
-        }
-        catch {
-            Write-Host "❌ Fehler:" $_.Exception.Message -ForegroundColor Red
-        }
+    $selectionTable += $obj
+
+    Write-Host ("[{0}] {1}" -f $index, $folder.Name)
+    $index++
+}
+
+# --------------------------------------------------
+# 4. Auswahl
+# --------------------------------------------------
+Write-Host ""
+Write-Host "➡ Auswahlmöglichkeiten:" -ForegroundColor Cyan
+Write-Host "  Nummer eingeben (z.B. 1)"
+Write-Host "  oder Namen/Pattern eingeben (z.B. Kontakte)"
+Write-Host ""
+
+$input = Read-Host "Deine Auswahl"
+
+$selectedFolders = @()
+
+# prüfen ob Zahl
+if ($input -match "^\d+$") {
+
+    $selected = $selectionTable | Where-Object { $_.Nr -eq [int]$input }
+
+    if ($selected) {
+        $selectedFolders += ($results | Where-Object { $_.Identity -eq $selected.Identity })
+    }
+
+} else {
+    # Textsuche
+    $selectedFolders = $results | Where-Object {
+        $_.Name -like "*$input*"
+    }
+}
+
+if (-not $selectedFolders) {
+    Write-Host "❌ Keine passenden Elemente gefunden" -ForegroundColor Red
+    return
+}
+
+# --------------------------------------------------
+# 5. Zielpfad abfragen (falls nicht gesetzt)
+# --------------------------------------------------
+if (-not $TargetPath) {
+    $TargetPath = Read-Host "Zielpfad für Restore (z.B. \MoTo)"
+}
+
+if (-not $TargetPath) {
+    Write-Host "❌ Kein Zielpfad angegeben" -ForegroundColor Red
+    return
+}
+
+# --------------------------------------------------
+# 6. Restore durchführen
+# --------------------------------------------------
+foreach ($folder in $selectedFolders) {
+
+    Write-Host ""
+    Write-Host "▶ Wiederherstellen: $($folder.Name)" -ForegroundColor Yellow
+
+    try {
+        Set-PublicFolder -Identity $folder.Identity -Path $TargetPath
+        Write-Host "✔ Erfolgreich wiederhergestellt nach $TargetPath" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "❌ Fehler:" $_.Exception.Message -ForegroundColor Red
     }
 }
 
 # --------------------------------------------------
-# 6. Export (immer hilfreich)
+# 7. Fertig
 # --------------------------------------------------
-$exportFile = "dumpster_export.csv"
-
-$results | Select-Object Name, ParentPath, Identity |
-    Export-Csv $exportFile -NoTypeInformation
-
 Write-Host ""
-Write-Host "✔ Export: $exportFile" -ForegroundColor Cyan
-Write-Host "✔ Fertig" -ForegroundColor Cyan
+Write-Host "✔ Vorgang abgeschlossen" -ForegroundColor Cyan
