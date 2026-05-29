@@ -130,8 +130,8 @@ foreach ($folder in $selectedFolders) {
     try {
         $parent = $folder.ParentPath
 
-        # Entferne Dumpster + GUID
-        $originalPath = $parent -replace '^.*\\[0-9a-fA-F\-]{36}', ''
+        # KORREKTE Rekonstruktion
+        $originalPath = $parent -replace '^.*?\\[0-9a-fA-F\-]{36}\\', '\'
 
         # Falls leer → Root
         if ([string]::IsNullOrWhiteSpace($originalPath)) {
@@ -148,7 +148,6 @@ foreach ($folder in $selectedFolders) {
         Write-Host "❌ Fehler: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
-
 # --------------------------------------------------
 # 6. Fertig
 # --------------------------------------------------
