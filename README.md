@@ -1,163 +1,141 @@
 # Scripts - Microsoft 365 Admin Toolkit
 
-Dieses Repository enthaelt eine Sammlung von PowerShell-Skripten fuer typische Microsoft 365 Admin-Aufgaben.
-Der Fokus liegt auf Exchange Online, Microsoft Graph, Gruppenverwaltung, Lizenzverwaltung und Mail-Analysen.
+Dieses Repository enthaelt interaktive PowerShell-Skripte fuer wiederkehrende Microsoft 365 Administration.
+Schwerpunkte sind Exchange Online, Microsoft Graph, Gruppen, Lizenzen, MFA/TAP sowie Message Trace.
 
-## Ziel des Repos
+## Aktueller Stand (Mai 2026)
 
-Die Skripte sollen wiederkehrende Aufgaben fuer Administratoren vereinfachen:
+Im Repository sind aktuell 16 Skripte plus diese README enthalten.
+Alle Skripte koennen einzeln gestartet werden, zentraler Einstieg ist ueber main.ps1.
 
-- Exchange Online Postfachanalyse und Berechtigungen
-- Message Trace Auswertungen
-- Gruppen anzeigen, erstellen und Mitglieder verwalten
-- Lizenzen zuweisen
-- MFA-/Authentifizierungsmethoden pruefen
-- Benutzerpostfaecher in Shared Mailboxen umwandeln
-- Temporary Access Pass (TAP) erzeugen
+## Enthaltene Skripte
 
-## Repository-Struktur
+### Einstieg / Wartung
 
-- `main.ps1`: Interaktives Admin-Menue als Einstiegspunkt
-- `RepoUpdate.ps1`: Klont oder aktualisiert das Repository lokal
-- Fachskripte: Je Thema ein separates, direkt ausfuehrbares Skript
+- main.ps1
+  - Interaktives Admin-Menue mit aktuell 16 Menuepunkten.
+- RepoUpdate.ps1
+  - Klont das Repo bei fehlendem .git oder fuehrt git pull aus.
+
+### Exchange Online - Postfachanalyse und Rechte
+
+- Postfachattribute.ps1
+  - Zeigt Basisdaten eines Postfachs (DisplayName, SMTP, Typ, Quotas).
+- Postfachattribute erweitert.ps1
+  - Zeigt zusaetzlich Forwarding, Statistik, Inbox Rules und explizite Berechtigungen.
+- Alle Postfächer Größe.ps1
+  - Listet Groesse/Anzahl/Status aller Postfaecher ueber EXO Statistics.
+- Postfachberechtigungen einzelner User.ps1
+  - Sucht Full Access, Send As und Send on Behalf fuer einen konkreten User tenantweit.
+- Alle Postfächer Berechtigungen.ps1
+  - Gibt bereichsweiten Berechtigungsueberblick je Mailbox aus (Full Access, Send As, Send on Behalf).
+
+### Exchange Online - Mailanalyse
+
+- Message Trace.ps1
+  - Message Trace V2 fuer frei gewaehltes Start-/Enddatum inkl. Status-Summary.
+- Message Trace User.ps1
+  - User-bezogene Sicht auf gesendete oder empfangene Mails fuer einen Tageszeitraum.
+
+### Gruppenverwaltung
+
+- Gruppen und Mitglieder anzeigen.ps1
+  - Kombiniert Exchange Distribution Groups sowie M365- und Security-Gruppen aus Graph.
+- Gruppen Mitglieder hinzufügen.ps1
+  - Interaktive Auswahl (Security, Distribution, M365), optional Gruppenerstellung und Mitglied-Hinzufuegen.
+
+### Identity / Security
+
+- MFA Check.ps1
+  - Liest Authentifizierungsmethoden eines Users und bewertet MFA-Registrierungsstatus.
+  - Zeigt zusaetzlich Hinweis auf vorhandene Conditional Access Policies.
+- Befristeter Zugriffspass.ps1
+  - Erstellt einen Temporary Access Pass (TAP) mit Laufzeit in Stunden (einmalig nutzbar).
+
+### Lizenzen
+
+- Lizenzen zuweisen.ps1
+  - Zeigt Tenant-Lizenzuebersicht (belegt/gesamt/frei), mappt SKU-Namen und weist Lizenz per Index zu.
+
+### Mailbox-Konvertierung
+
+- Convert User zu Shared Mailbox.ps1
+  - Konvertiert User-Mailbox zu Shared Mailbox.
+  - Optionales Entfernen vorhandener M365-Lizenzen ueber Graph.
+
+### Utilities
+
+- wget.ps1
+  - Einfacher Datei-Download ueber Invoke-WebRequest (URL interaktiv oder Parameter).
+- Restore Public Folder.ps1
+  - Sucht Public Folder unter DUMPSTER_ROOT nach Namensmuster und verschiebt optional per Zielpfad.
 
 ## Voraussetzungen
 
-- PowerShell 7+ (`pwsh`)
-- Administrative Berechtigungen im jeweiligen Microsoft 365 Tenant
-- Internetzugang zu Microsoft 365 Endpunkten
-- Optional: Git (fuer `RepoUpdate.ps1`)
+- PowerShell 7+ (pwsh)
+- Microsoft 365 Adminrechte je nach Aktion
+- Internetzugang zu Exchange Online und Microsoft Graph
+- Optional: Git fuer RepoUpdate.ps1
 
-## Verwendete Module
+## Typische verwendete Module
 
-Die Skripte installieren benoetigte Module in der Regel automatisch (`Install-Module -Scope CurrentUser`).
+Die Skripte installieren fehlende Module in der Regel selbst fuer den CurrentUser.
 
-Hauefig verwendete Module:
+- ExchangeOnlineManagement
+- Microsoft.Graph
+- Microsoft.Graph.Authentication
+- Microsoft.Graph.Groups
+- Microsoft.Graph.Users
+- Microsoft.Graph.Identity.SignIns
+- Microsoft.Graph.Identity.DirectoryManagement
 
-- `ExchangeOnlineManagement`
-- `Microsoft.Graph`
-- `Microsoft.Graph.Authentication`
-- `Microsoft.Graph.Groups`
-- `Microsoft.Graph.Users`
-- `Microsoft.Graph.Identity.SignIns`
-- `Microsoft.Graph.Identity.DirectoryManagement`
+## Typische Graph-Scopes (je Skript unterschiedlich)
 
-## Erforderliche Rechte / Scopes (je nach Skript)
+- User.Read.All
+- Directory.Read.All
+- Policy.Read.All
+- UserAuthenticationMethod.Read.All
+- UserAuthenticationMethod.ReadWrite.All
+- User.ReadWrite.All
+- Directory.ReadWrite.All
+- Organization.Read.All
+- Group.Read.All
+- GroupMember.Read.All
 
-Beispiele fuer angeforderte Graph-Scopes:
-
-- `User.Read.All`
-- `Directory.Read.All`
-- `UserAuthenticationMethod.ReadWrite.All`
-- `UserAuthenticationMethod.Read.All`
-- `User.ReadWrite.All`
-- `Directory.ReadWrite.All`
-- `Organization.Read.All`
-- `Group.Read.All`
-- `GroupMember.Read.All`
-
-Hinweis: Welche Rollen/Rechte noetig sind, haengt vom konkreten Cmdlet und vom Tenant-Setup (z. B. Conditional Access) ab.
+Hinweis: Der tatsaechlich benoetigte Scope haengt vom Tenant und von Conditional Access/Rollenmodell ab.
 
 ## Schnellstart
 
-### Option 1: Menue verwenden
-
-1. PowerShell 7 starten.
-2. Ins Repo-Verzeichnis wechseln.
-3. Menue starten:
+1. In das Repository wechseln.
+2. Menue starten:
 
 ```powershell
 pwsh -File ./main.ps1
 ```
 
-Danach die gewuenschte Funktion per Nummer auswaehlen.
+1. Funktion per Nummer waehlen.
 
-### Option 2: Einzelskript direkt ausfuehren
+Direktstart einzelnes Skript:
 
 ```powershell
 pwsh -File "./MFA Check.ps1"
 ```
 
-## Skriptuebersicht
+## Wichtige Repo-Hinweise
 
-### Einstieg und Wartung
+- main.ps1 nutzt einen fest eingetragenen scriptPath (/home/ludwig/Dokumente/Scripts).
+  Passe diesen Pfad an deine Umgebung an, wenn das Menue Skripte nicht findet.
+- RepoUpdate.ps1 nutzt ebenfalls einen festen repoDir sowie eine feste repoUrl.
+  Bei Forks oder abweichendem lokalen Pfad bitte anpassen.
+- Die meisten Skripte verbinden sich selbststaendig zu EXO/Graph, wenn keine Session aktiv ist.
+- Restore Public Folder.ps1 enthaelt keine eigene Verbindungslogik und erwartet vorhandene Rechte/Session fuer Public Folder Cmdlets.
 
-- `main.ps1`
-  - Interaktives Menue fuer den Start der Admin-Skripte.
-- `RepoUpdate.ps1`
-  - Prueft lokales Repo-Verzeichnis und fuehrt `git clone` oder `git pull` aus.
+## Betriebs- und Sicherheitshinweise
 
-### Exchange: Postfaecher und Berechtigungen
+- Skripte nur mit minimal noetigen Admin-Rollen ausfuehren.
+- Aenderungen (z. B. Lizenzzuweisungen, TAP, Gruppenmitgliedschaften) dokumentieren.
+- Vor Nutzung in produktiven Tenants zuerst in Testumgebung pruefen.
 
-- `Postfachattribute.ps1`
-  - Zeigt Basisattribute eines Postfachs (DisplayName, SMTP, Typ, Quotas).
-- `Postfachattribute erweitert.ps1`
-  - Erweiterte Postfachsicht inkl. Weiterleitung, Statistik, Inbox Rules, explizite Berechtigungen.
-- `Alle Postfächer Größe.ps1`
-  - Listet Groessen-/Nutzungsdaten aller Postfaecher.
-- `Postfachberechtigungen einzelner User.ps1`
-  - Sucht tenantweit nach Postfachrechten eines konkreten Users (Full Access, Send As, Send on Behalf).
-- `Alle Postfächer Berechtigungen.ps1`
-  - Erstellt einen Gesamtueberblick der Berechtigungen ueber alle Postfaecher.
+## Lizenz
 
-### Exchange: Mail-Analyse
-
-- `Message Trace.ps1`
-  - Message Trace fuer einen frei waehlbaren Zeitraum mit Status-Zusammenfassung.
-- `Message Trace User.ps1`
-  - Message Trace fokussiert auf einen User (gesendet oder empfangen) fuer X Tage.
-
-### Identity / Security
-
-- `MFA Check.ps1`
-  - Prueft Authentifizierungsmethoden eines Users und bewertet MFA-Registrierungsstatus.
-- `Befristeter Zugriffspass.ps1`
-  - Erstellt einen Temporary Access Pass (TAP) fuer einen User mit begrenzter Gueltigkeit.
-
-### Gruppen
-
-- `Gruppen und Mitglieder anzeigen.ps1`
-  - Zeigt Exchange-Verteiler, Microsoft 365 Gruppen und Security Groups inkl. Mitgliedern.
-- `Gruppen Mitglieder hinzufügen.ps1`
-  - Waehlt Gruppentyp, sucht/erstellt Gruppe und fuegt Mitglieder interaktiv hinzu.
-
-### Lizenzen
-
-- `Lizenzen zuweisen.ps1`
-  - Zeigt Lizenzbestand (belegt/frei/gesamt) und weist per Index-Auswahl eine Lizenz einem User zu.
-  - Enthalten ist ein grosses SKU-Mapping fuer sprechende Lizenznamen.
-
-### User-Mailbox-Konvertierung
-
-- `Convert User zu Shared Mailbox.ps1`
-  - Konvertiert eine User Mailbox zu Shared Mailbox.
-  - Optional koennen anschliessend M365-Lizenzen entfernt werden.
-
-## Typischer Ablauf in der Praxis
-
-1. `main.ps1` starten.
-2. Bei Bedarf zuerst `RepoUpdate.ps1` ausfuehren.
-3. Gewuenschtes Admin-Skript waehlen.
-4. Anmeldedialoge fuer Exchange Online / Graph bestaetigen.
-5. User-/Gruppen-/Zeitraumparameter eingeben.
-6. Ausgabe pruefen und dokumentieren.
-
-## Wichtige Hinweise
-
-- Einige Skripte enthalten fest konfigurierte Pfade (z. B. in `main.ps1` und `RepoUpdate.ps1`).
-  Diese Pfade sollten auf deine lokale Umgebung angepasst werden.
-- Viele Skripte verbinden sich bei fehlender Session automatisch mit Exchange Online oder Graph.
-- Bei produktiven Tenants sollten Skripte zuerst in einer Testumgebung geprueft werden.
-- Die Ausgabe erfolgt hauptsaechlich in der Konsole (`Format-Table`/`Format-List`) und ist fuer manuelle Admin-Workflows optimiert.
-
-## Sicherheit und Betrieb
-
-- Skripte nur mit passenden Admin-Rollen ausfuehren.
-- Prinzip der minimalen Rechte beachten.
-- Zugriffe und Aenderungen (z. B. Lizenzzuweisung) intern dokumentieren.
-- Bei Conditional Access / MFA-Policies kann interaktive Anmeldung mehrfach erforderlich sein.
-
-## Lizenz / Nutzung
-
-Keine explizite Open-Source-Lizenzdatei im Repository gefunden.
-Falls gewuenscht, sollte eine passende `LICENSE` Datei ergaenzt werden.
+Aktuell ist keine explizite LICENSE-Datei im Repository vorhanden.
