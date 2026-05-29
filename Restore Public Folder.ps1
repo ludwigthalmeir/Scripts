@@ -47,7 +47,7 @@ if (-not $results) {
 # 3. Auswahl anzeigen
 # --------------------------------------------------
 Write-Host ""
-Write-Host "✅ Gefundene Elemente:" $results.Count -ForegroundColor Green
+Write-Host "✅ Gefundene Elemente: $($results.Count)" -ForegroundColor Green
 Write-Host ""
 
 $index = 1
@@ -84,13 +84,23 @@ $selectedFolders = @()
 
 if ($userInput -match '^\d+(,\d+)*$') {
 
-    $numbers = $userInput -split "," | ForEach-Object { [int]($_.Trim())) }
+    $numbers = @()
+    $parts = $userInput -split ","
+
+    foreach ($p in $parts) {
+        $n = 0
+        if ([int]::TryParse($p.Trim(), [ref]$n)) {
+            $numbers += $n
+        } else {
+            Write-Host "⚠ Ungültige Zahl: $p" -ForegroundColor Yellow
+        }
+    }
 
     foreach ($n in $numbers) {
 
         $match = $selectionTable | Where-Object { $_.Nr -eq $n }
 
-         if ($match) {
+        if ($match) {
             $selectedFolders += $results | Where-Object { $_.Identity -eq $match.Identity }
         }
         else {
@@ -100,7 +110,7 @@ if ($userInput -match '^\d+(,\d+)*$') {
 
 } else {
     $selectedFolders = $results | Where-Object {
-        $_.Name -like "*$userrInput*"
+        $_.Name -like "*$userInput*"
     }
 }
 
@@ -112,30 +122,30 @@ if (-not $selectedFolders -or $selectedFolders.Count -eq 0) {
 # --------------------------------------------------
 # 5. Restore an Originalpfad
 # --------------------------------------------------
-foreach ($$folder in $selectedFolders) {
+foreach ($folder in $selectedFolders) {
 
     Write-Host ""
-    Write-Host "▶ Wiederherstellen: $$($folder.Name)" -ForegroundColor Yellow
+    Write-Host "▶ Wiederherstellen: $($folder.Name)" -ForegroundColor Yellow
 
     try {
         $parent = $folder.ParentPath
 
-        # GUID + Dumpster entfernen
+        # Entferne Dumpster + GUID
         $originalPath = $parent -replace '^.*\\[0-9a-fA-F\-]{36}', ''
 
-        # Falls leer → Root setzen
-        if ([string]::IsNullOrWhiteSpace($Path)) {
+        # Falls leer → Root
+        if ([string]::IsNullOrWhiteSpace($originalPath)) {
             $originalPath = "\"
         }
 
-        Write-Host "→ Zielpfad (rekkonstruiert): $originalPath"
+        Write-Host "→ Zielpfad (rekonstruiert): $originalPath"
 
         Set-PublicFolder -Identity $folder.Identity -Path $originalPath
 
-        Write-Host "✔ Erfolgreich wiederhergestellt" -ForegroundColorr Green
+        Write-Host "✔ Erfolgreich wiederhergestellt" -ForegroundColor Green
     }
     catch {
-        Write-Host "❌ Fehler:" $_.Exception.Message -ForegroundColor Red
+        Write-Host "❌ Fehler: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
@@ -144,3 +154,4 @@ foreach ($$folder in $selectedFolders) {
 # --------------------------------------------------
 Write-Host ""
 Write-Host "✔ Vorgang abgeschlossen" -ForegroundColor Cyan
+``
