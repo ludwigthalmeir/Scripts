@@ -1,6 +1,7 @@
 param (
     [string]$SearchPattern = "",
-    [string]$UserPrincipalName = ""
+    [string]$UserPrincipalName = "",
+    [string]$TargetPath = ""
 )
 
 Write-Host "▶ Restore Public Folder gestartet..." -ForegroundColor Cyan
@@ -73,9 +74,9 @@ foreach ($folder in $results) {
 # --------------------------------------------------
 Write-Host ""
 Write-Host "➡ Auswahlmöglichkeiten:" -ForegroundColor Cyan
-Write-Host "  Nummer eingeben (z.B. 1)"
+Write-Host "  Nummer (z.B. 1)"
 Write-Host "  mehrere: 1,2,3"
-Write-Host "  oder Namen/Pattern"
+Write-Host "  oder Name/Pattern"
 Write-Host ""
 
 $userInput = Read-Host "Deine Auswahl"
@@ -84,27 +85,23 @@ $selectedFolders = @()
 
 if ($userInput -match '^\d+(,\d+)*$') {
 
-    $numbers = @()
     $parts = $userInput -split ","
 
     foreach ($p in $parts) {
+
         $n = 0
         if ([int]::TryParse($p.Trim(), [ref]$n)) {
-            $numbers += $n
-        } else {
-            Write-Host "⚠ Ungültige Zahl: $p" -ForegroundColor Yellow
-        }
-    }
 
-    foreach ($n in $numbers) {
+            $match = $selectionTable | Where-Object { $_.Nr -eq $n }
 
-        $match = $selectionTable | Where-Object { $_.Nr -eq $n }
-
-        if ($match) {
-            $selectedFolders += $results | Where-Object { $_.Identity -eq $match.Identity }
+            if ($match) {
+                $selectedFolders += $results | Where-Object { $_.Identity -eq $match.Identity }
+            } else {
+                Write-Host "⚠ Nummer $n nicht gefunden" -ForegroundColor Yellow
+            }
         }
         else {
-            Write-Host "⚠ Nummer $n nicht gefunden" -ForegroundColor Yellow
+            Write-Host "⚠ Ungültige Eingabe: $p" -ForegroundColor Yellow
         }
     }
 
@@ -120,37 +117,39 @@ if (-not $selectedFolders -or $selectedFolders.Count -eq 0) {
 }
 
 # --------------------------------------------------
-# 5. Restore an Originalpfad
+# 5. Zielpfad abfragen (wenn nicht gesetzt)
+# --------------------------------------------------
+if (-not $TargetPath) {
+    Write-Host ""
+    Write-Host "➡ Zielpfad angeben (z.B. \Folder\Subfolder)" -ForegroundColor Cyan
+    $TargetPath = Read-Host "Zielpfad"
+}
+
+if (-not $TargetPath -or $TargetPath.Trim() -eq "") {
+    Write-Host "❌ Kein Zielpfad angegeben" -ForegroundColor Red
+    return
+}
+
+# --------------------------------------------------
+# 6. Restore durchführen
 # --------------------------------------------------
 foreach ($folder in $selectedFolders) {
 
     Write-Host ""
     Write-Host "▶ Wiederherstellen: $($folder.Name)" -ForegroundColor Yellow
+    Write-Host "→ Zielpfad: $TargetPath"
 
     try {
-        $parent = $folder.ParentPath
-
-        # KORREKTE Rekonstruktion
-        $originalPath = $parent -replace '^.*?\\[0-9a-fA-F\-]{36}\\', '\'
-
-        # Falls leer → Root
-        if ([string]::IsNullOrWhiteSpace($originalPath)) {
-            $originalPath = "\"
-        }
-
-        Write-Host "→ Zielpfad (rekonstruiert): $originalPath"
-
-        Set-PublicFolder -Identity $folder.Identity -Path $originalPath
-
+        Set-PublicFolder -Identity $folder.Identity -Path $TargetPath
         Write-Host "✔ Erfolgreich wiederhergestellt" -ForegroundColor Green
     }
     catch {
         Write-Host "❌ Fehler: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
+
 # --------------------------------------------------
-# 6. Fertig
+# 7. Fertig
 # --------------------------------------------------
 Write-Host ""
 Write-Host "✔ Vorgang abgeschlossen" -ForegroundColor Cyan
-``
