@@ -1,5 +1,5 @@
 param (
-    [string]$SearchPattern = "_Kontakte",
+    [string]$SearchPattern = "",
     [string]$TargetPath = "",
     [string]$UserPrincipalName = ""
 )
@@ -7,21 +7,18 @@ param (
 Write-Host "▶ Restore Public Folder gestartet..." -ForegroundColor Cyan
 
 # --------------------------------------------------
-# 1. Prüfen ob Exchange Cmdlets verfügbar sind
+# 1. Exchange Verbindung sicherstellen
 # --------------------------------------------------
 if (-not (Get-Command Get-PublicFolder -ErrorAction SilentlyContinue)) {
 
-    Write-Host "▶ Exchange Cmdlets nicht gefunden" -ForegroundColor Yellow
+    Write-Host "▶ Verbinde zu Exchange Online..." -ForegroundColor Yellow
 
-    # Prüfen ob Modul existiert
     if (-not (Get-Module -ListAvailable -Name ExchangeOnlineManagement)) {
-        Write-Host "▶ Installiere ExchangeOnlineManagement Modul..."
         Install-Module ExchangeOnlineManagement -Force -AllowClobber
     }
 
     Import-Module ExchangeOnlineManagement
 
-    # Login
     if ($UserPrincipalName) {
         Connect-ExchangeOnline -UserPrincipalName $UserPrincipalName
     } else {
@@ -30,41 +27,54 @@ if (-not (Get-Command Get-PublicFolder -ErrorAction SilentlyContinue)) {
 }
 
 # --------------------------------------------------
-# 2. Dumpster durchsuchen
+# 2. Dumpster laden (IMMER komplett!)
 # --------------------------------------------------
 $dumpsterRoot = "\NON_IPM_SUBTREE\DUMPSTER_ROOT"
 
-Write-Host "▶ Durchsuche Dumpster nach: $SearchPattern" -ForegroundColor Cyan
+Write-Host "▶ Lese kompletten Dumpster..." -ForegroundColor Cyan
 
-$results = Get-PublicFolder -Identity $dumpsterRoot -Recurse -ResultSize Unlimited |
-    Where-Object { $_.Name -like "*$SearchPattern*" }
+$results = Get-PublicFolder -Identity $dumpsterRoot -Recurse -ResultSize Unlimited
 
 # --------------------------------------------------
-# 3. Ergebnisse prüfen
+# 3. Optionaler Filter (nur wenn gesetzt!)
+# --------------------------------------------------
+if ($SearchPattern -and $SearchPattern.Trim() -ne "") {
+
+    Write-Host "▶ Filter aktiv: $SearchPattern" -ForegroundColor Yellow
+
+    $results = $results | Where-Object {
+        $_.Name -like "*$SearchPattern*"
+    }
+}
+else {
+    Write-Host "▶ Kein Filter aktiv – zeige ALLE Elemente" -ForegroundColor Green
+}
+
+# --------------------------------------------------
+# 4. Prüfen ob Ergebnisse vorhanden
 # --------------------------------------------------
 if (-not $results) {
-    Write-Host "❌ Keine Treffer gefunden für: $SearchPattern" -ForegroundColor Red
+    Write-Host "❌ Keine Elemente gefunden" -ForegroundColor Red
     return
 }
 
-Write-Host "✅ Treffer gefunden:" $results.Count -ForegroundColor Green
+Write-Host "✅ Gefundene Elemente:" $results.Count -ForegroundColor Green
 
 # --------------------------------------------------
-# 4. Verarbeitung
+# 5. Ausgabe
 # --------------------------------------------------
 foreach ($folder in $results) {
 
     Write-Host ""
-    Write-Host "📁 Name: $($folder.Name)"
-    Write-Host "📂 Pfad: $($folder.ParentPath)"
+    Write-Host "📁 Name:     $($folder.Name)"
+    Write-Host "📂 Pfad:     $($folder.ParentPath)"
     Write-Host "🔎 Identity: $($folder.Identity)"
 
-    if ($TargetPath) {
+    # Optional verschieben
+    if ($TargetPath -and $TargetPath.Trim() -ne "") {
         try {
             Write-Host "➡ Verschiebe nach: $TargetPath" -ForegroundColor Yellow
-
             Set-PublicFolder -Identity $folder.Identity -Path $TargetPath
-
             Write-Host "✔ Erfolgreich verschoben" -ForegroundColor Green
         }
         catch {
@@ -74,7 +84,13 @@ foreach ($folder in $results) {
 }
 
 # --------------------------------------------------
-# 5. Fertig
+# 6. Export (immer hilfreich)
 # --------------------------------------------------
+$exportFile = "dumpster_export.csv"
+
+$results | Select-Object Name, ParentPath, Identity |
+    Export-Csv $exportFile -NoTypeInformation
+
 Write-Host ""
-Write-Host "✔ Vorgang abgeschlossen" -ForegroundColor Cyan
+Write-Host "✔ Export: $exportFile" -ForegroundColor Cyan
+Write-Host "✔ Fertig" -ForegroundColor Cyan
