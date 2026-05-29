@@ -76,30 +76,39 @@ foreach ($folder in $results) {
 Write-Host ""
 Write-Host "➡ Auswahlmöglichkeiten:" -ForegroundColor Cyan
 Write-Host "  Nummer eingeben (z.B. 1)"
-Write-Host "  oder Namen/Pattern eingeben (z.B. Kontakte)"
+Write-Host "  mehrere: 1,2,3"
+Write-Host "  oder Namen/Pattern (z.B. Kontakte)"
 Write-Host ""
 
-$input = Read-Host "Deine Auswahl"
+$userInput = Read-Host "Deine Auswahl"
 
 $selectedFolders = @()
 
-# prüfen ob Zahl
-if ($input -match "^\d+$") {
+# Zahlenliste erkennen (z.B. 1 oder 1,2,3)
+if ($userInput -match '^\d+(,\d+)*$') {
 
-    $selected = $selectionTable | Where-Object { $_.Nr -eq [int]$input }
+    $numbers = $userInput -split "," | ForEach-Object { [int]($_.Trim()) }
 
-    if ($selected) {
-        $selectedFolders += ($results | Where-Object { $_.Identity -eq $selected.Identity })
+    foreach ($n in $numbers) {
+
+        $match = $selectionTable | Where-Object { $_.Nr -eq $n }
+
+        if ($match) {
+            $selectedFolders += $results | Where-Object { $_.Identity -eq $match.Identity }
+        }
+        else {
+            Write-Host "⚠ Nummer $n nicht gefunden" -ForegroundColor Yellow
+        }
     }
 
 } else {
     # Textsuche
     $selectedFolders = $results | Where-Object {
-        $_.Name -like "*$input*"
+        $_.Name -like "*$userInput*"
     }
 }
 
-if (-not $selectedFolders) {
+if (-not $selectedFolders -or $selectedFolders.Count -eq 0) {
     Write-Host "❌ Keine passenden Elemente gefunden" -ForegroundColor Red
     return
 }
