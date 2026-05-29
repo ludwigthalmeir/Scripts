@@ -3,15 +3,14 @@ param (
 )
 
 if (-not $Url) {
-    Write-Host "Verwendung: .\get.ps1 <URL>"
-    exit
+    $Url = Read-Host "Bitte URL eingeben"
 }
 
-# Dateiname aus URL extrahieren
+# Dateiname aus URL holen
 $FileName = Split-Path $Url -Leaf
 
-Write-Host "Starte Download von: $Url"
+Write-Host "▶ Starte Download: $Url"
 
 Invoke-WebRequest -Uri $Url -OutFile $FileName
 
-Write-Host "Download abgeschlossen: $FileName"
+Write-Host "✔ Fertig: $FileName"
