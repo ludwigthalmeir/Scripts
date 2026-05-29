@@ -20,7 +20,7 @@ $menu = @(
     @{ Index = 12; Name = "Convert User zu Shared Mailbox"; File = "Convert User zu Shared Mailbox.ps1" }
     @{ Index = 13; Name = "Lizenzen zuweisen"; File = "Lizenzen zuweisen.ps1" }
     @{ Index = 14; Name = "MFA Check"; File = "MFA Check.ps1" }
-
+    @{ Index = 15; Name = "wget"; File = "wget.ps1" }
 
     MFA Check.ps1
 )
