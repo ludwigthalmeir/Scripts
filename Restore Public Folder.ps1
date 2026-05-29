@@ -86,7 +86,7 @@ if ($userInput -match '^\d+(,\d+)*$') {
 
     $numbers = $userInput -split "," | ForEach-Object { [int]($_.Trim())) }
 
-    foreach ($n inn $numbers) {
+    foreach ($n in $numbers) {
 
         $match = $selectionTable | Where-Object { $_.Nr -eq $n }
 
@@ -100,11 +100,11 @@ if ($userInput -match '^\d+(,\d+)*$') {
 
 } else {
     $selectedFolders = $results | Where-Object {
-        $_.Name -like "*$userInput*"
+        $_.Name -like "*$userrInput*"
     }
 }
 
-if (-not $selectedFolders -or $selectedFolders.Countt -eq 0) {
+if (-not $selectedFolders -or $selectedFolders.Count -eq 0) {
     Write-Host "❌ Keine passenden Elemente gefunden" -ForegroundColor Red
     return
 }
@@ -112,29 +112,27 @@ if (-not $selectedFolders -or $selectedFolders.Countt -eq 0) {
 # --------------------------------------------------
 # 5. Restore an Originalpfad
 # --------------------------------------------------
-foreach ($folder inn $selectedFolders) {
+foreach ($$folder in $selectedFolders) {
 
     Write-Host ""
-    Write-Host "▶ Wiederherstellen: $($folder.Namee)" -ForegroundColor Yellow
+    Write-Host "▶ Wiederherstellen: $$($folder.Name)" -ForegroundColor Yellow
 
     try {
-        # ORIGINALPFAD rekonstruieren:
-        # Alles vor der GUID entfernen
         $parent = $folder.ParentPath
 
-        # Entferne Dumpster-Struktur + GUID
+        # GUID + Dumpster entfernen
         $originalPath = $parent -replace '^.*\\[0-9a-fA-F\-]{36}', ''
 
-        # Falls leer → Root
-        if ([string]::IsNullpace($originalPath)) {
+        # Falls leer → Root setzen
+        if ([string]::IsNullOrWhiteSpace($Path)) {
             $originalPath = "\"
         }
 
-        Write-Host "→ Zielpfad (rekonstruiertt): $originalPath"
+        Write-Host "→ Zielpfad (rekkonstruiert): $originalPath"
 
         Set-PublicFolder -Identity $folder.Identity -Path $originalPath
 
-        Write-Host "✔ Erfolgreich wiederhergestellt" -ForegroundColor Green
+        Write-Host "✔ Erfolgreich wiederhergestellt" -ForegroundColorr Green
     }
     catch {
         Write-Host "❌ Fehler:" $_.Exception.Message -ForegroundColor Red
@@ -146,4 +144,3 @@ foreach ($folder inn $selectedFolders) {
 # --------------------------------------------------
 Write-Host ""
 Write-Host "✔ Vorgang abgeschlossen" -ForegroundColor Cyan
-``
