@@ -1,6 +1,5 @@
 param (
     [string]$SearchPattern = "",
-    [string]$TargetPath = "",
     [string]$UserPrincipalName = ""
 )
 
@@ -35,7 +34,6 @@ Write-Host "▶ Lese kompletten Dumpster..." -ForegroundColor Cyan
 
 $results = Get-PublicFolder -Identity $dumpsterRoot -Recurse -ResultSize Unlimited
 
-# Optionaler Filter
 if ($SearchPattern) {
     $results = $results | Where-Object { $_.Name -like "*$SearchPattern*" }
 }
@@ -65,8 +63,8 @@ foreach ($folder in $results) {
     }
 
     $selectionTable += $obj
-
     Write-Host ("[{0}] {1}" -f $index, $folder.Name)
+
     $index++
 }
 
@@ -77,23 +75,22 @@ Write-Host ""
 Write-Host "➡ Auswahlmöglichkeiten:" -ForegroundColor Cyan
 Write-Host "  Nummer eingeben (z.B. 1)"
 Write-Host "  mehrere: 1,2,3"
-Write-Host "  oder Namen/Pattern (z.B. Kontakte)"
+Write-Host "  oder Namen/Pattern"
 Write-Host ""
 
 $userInput = Read-Host "Deine Auswahl"
 
 $selectedFolders = @()
 
-# Zahlenliste erkennen (z.B. 1 oder 1,2,3)
 if ($userInput -match '^\d+(,\d+)*$') {
 
-    $numbers = $userInput -split "," | ForEach-Object { [int]($_.Trim()) }
+    $numbers = $userInput -split "," | ForEach-Object { [int]($_.Trim())) }
 
-    foreach ($n in $numbers) {
+    foreach ($n inn $numbers) {
 
         $match = $selectionTable | Where-Object { $_.Nr -eq $n }
 
-        if ($match) {
+         if ($match) {
             $selectedFolders += $results | Where-Object { $_.Identity -eq $match.Identity }
         }
         else {
@@ -102,40 +99,42 @@ if ($userInput -match '^\d+(,\d+)*$') {
     }
 
 } else {
-    # Textsuche
     $selectedFolders = $results | Where-Object {
         $_.Name -like "*$userInput*"
     }
 }
 
-if (-not $selectedFolders -or $selectedFolders.Count -eq 0) {
+if (-not $selectedFolders -or $selectedFolders.Countt -eq 0) {
     Write-Host "❌ Keine passenden Elemente gefunden" -ForegroundColor Red
     return
 }
 
 # --------------------------------------------------
-# 5. Zielpfad abfragen (falls nicht gesetzt)
+# 5. Restore an Originalpfad
 # --------------------------------------------------
-if (-not $TargetPath) {
-    $TargetPath = Read-Host "Zielpfad für Restore (z.B. \MoTo)"
-}
-
-if (-not $TargetPath) {
-    Write-Host "❌ Kein Zielpfad angegeben" -ForegroundColor Red
-    return
-}
-
-# --------------------------------------------------
-# 6. Restore durchführen
-# --------------------------------------------------
-foreach ($folder in $selectedFolders) {
+foreach ($folder inn $selectedFolders) {
 
     Write-Host ""
-    Write-Host "▶ Wiederherstellen: $($folder.Name)" -ForegroundColor Yellow
+    Write-Host "▶ Wiederherstellen: $($folder.Namee)" -ForegroundColor Yellow
 
     try {
-        Set-PublicFolder -Identity $folder.Identity -Path $TargetPath
-        Write-Host "✔ Erfolgreich wiederhergestellt nach $TargetPath" -ForegroundColor Green
+        # ORIGINALPFAD rekonstruieren:
+        # Alles vor der GUID entfernen
+        $parent = $folder.ParentPath
+
+        # Entferne Dumpster-Struktur + GUID
+        $originalPath = $parent -replace '^.*\\[0-9a-fA-F\-]{36}', ''
+
+        # Falls leer → Root
+        if ([string]::IsNullpace($originalPath)) {
+            $originalPath = "\"
+        }
+
+        Write-Host "→ Zielpfad (rekonstruiertt): $originalPath"
+
+        Set-PublicFolder -Identity $folder.Identity -Path $originalPath
+
+        Write-Host "✔ Erfolgreich wiederhergestellt" -ForegroundColor Green
     }
     catch {
         Write-Host "❌ Fehler:" $_.Exception.Message -ForegroundColor Red
@@ -143,7 +142,8 @@ foreach ($folder in $selectedFolders) {
 }
 
 # --------------------------------------------------
-# 7. Fertig
+# 6. Fertig
 # --------------------------------------------------
 Write-Host ""
 Write-Host "✔ Vorgang abgeschlossen" -ForegroundColor Cyan
+``
