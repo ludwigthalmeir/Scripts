@@ -21,8 +21,9 @@ $menu = @(
     @{ Index = 13; Name = "Lizenzen zuweisen"; File = "Lizenzen zuweisen.ps1" }
     @{ Index = 14; Name = "MFA Check"; File = "MFA Check.ps1" }
     @{ Index = 15; Name = "wget"; File = "wget.ps1" }
+    @{ Index = 16; Name = "Restore Public Folder"; File = "Restore Public Folder.ps1" }
+    
 
-    MFA Check.ps1
 )
 
 # =========================
